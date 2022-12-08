@@ -1,0 +1,21 @@
+{
+  "name": "vtos/php-refactoring-practice",
+  "description": "PHP refactoring practice: moving to a better code structure while keeping the code up and running with each commit.",
+  "authors": [
+    {
+      "name": "Vitaly Potenko",
+      "email": "potenkov@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "DownPaymentCalculator\\Tests\\": "tests"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  }
+}
