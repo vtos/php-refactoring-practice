@@ -10,6 +10,11 @@
   "require": {
     "php": ">=7.4"
   },
+  "autoload": {
+    "psr-4": {
+      "DownPaymentCalculator\\": "src"
+    }
+  },
   "autoload-dev": {
     "psr-4": {
       "DownPaymentCalculator\\Tests\\": "tests"
