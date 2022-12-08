@@ -1,0 +1,6 @@
+version: '3'
+services:
+  webserver:
+    build: ./docker
+    volumes:
+      - .:/usr/apps/php/down_payment_calculator
