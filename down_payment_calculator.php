@@ -1,4 +1,10 @@
 <?php
+/**
+ * The entry point of the legacy application, basically a single script to run.
+ *
+ * @package vtos/php-refactoring-practice
+ * @author  Vitaly Potenko <potenkov@gmail.com>
+ */
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
@@ -16,16 +22,16 @@ class Controller
 
     public function runJSON(Request $request): string
     {
-        $this->downPaymentCalculator->calculate($request);
+        $data = $this->downPaymentCalculator->calculate($request);
 
-        return $this->downPaymentCalculator->printJSON();
+        return $this->downPaymentCalculator->printJSON($data['products']);
     }
 
     public function runHTML(Request $request): string
     {
-        $this->downPaymentCalculator->calculate($request);
+        $data = $this->downPaymentCalculator->calculate($request);
 
-        return $this->downPaymentCalculator->printHTML();
+        return $this->downPaymentCalculator->printHTML($data['products']);
     }
 }
 

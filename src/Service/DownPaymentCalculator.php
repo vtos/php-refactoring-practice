@@ -1,4 +1,10 @@
 <?php
+/**
+ * Contains definition of the calculation service class.
+ *
+ * @package vtos/php-refactoring-practice
+ * @author  Vitaly Potenko <potenkov@gmail.com>
+ */
 
 declare(strict_types=1);
 
@@ -8,9 +14,7 @@ use DownPaymentCalculator\Request\Request;
 
 final class DownPaymentCalculator
 {
-    public $data;
-
-    public function calculate(Request $request)
+    public function calculate(Request $request): array
     {
         $now = new \DateTime('now');
 
@@ -44,60 +48,63 @@ final class DownPaymentCalculator
             exit;
         }
 
-        $this->data['yearlyUsage'] = $request->yearlyUsage;
-        $this->data['vat'] = $request->vat;
-        $this->data['downPaymentInterval'] = $request->downPaymentInterval;
+        $data = [];
+        $data['yearlyUsage'] = $request->yearlyUsage;
+        $data['vat'] = $request->vat;
+        $data['downPaymentInterval'] = $request->downPaymentInterval;
 
         foreach ($request->product as $i => $product) {
             if ($now >= new \DateTime($product['validFrom']) && $now <= new \DateTime($product['validUntil'])) {
-                $this->data['products'][$i]['productName'] = $product['name'];
+                $data['products'][$i]['productName'] = $product['name'];
                 foreach ($product['tariff'] as $tariff) {
                     if ($now >= new \DateTime($tariff['validFrom']) && $now <= new \DateTime($tariff['validUntil'])
                         && $request->yearlyUsage >= $tariff['usageFrom']) {
-                        $this->data['products'][$i]['tariff'] = $tariff;
-                        $this->data['products'][$i]['workingPriceNet'] = $tariff['workingPriceNet'];
-                        $this->data['products'][$i]['basePriceNet'] = $tariff['basePriceNet'];
+                        $data['products'][$i]['tariff'] = $tariff;
+                        $data['products'][$i]['workingPriceNet'] = $tariff['workingPriceNet'];
+                        $data['products'][$i]['basePriceNet'] = $tariff['basePriceNet'];
                     }
                 }
             }
         }
 
         // check for valid bonus
+        $bonuses = [];
         foreach ($request->bonus as $bonus) {
             if ($now >= new \DateTime($bonus['validFrom']) && $now <= new \DateTime($bonus['validUntil'])
                 && $request->yearlyUsage >= $bonus['usageFrom']) {
-                $this->data['bonus'][] = $bonus;
+                $bonuses[] = $bonus;
             }
         }
 
-        foreach ($this->data['products'] as $product_i => $product) {
+        foreach ($data['products'] as $product_i => $product) {
             if (!empty($product['tariff'])) {
                 // yearly working price
-                $workingPriceNetYearly = $product['workingPriceNet'] * $this->data['yearlyUsage'];
-                //$this->data['products'][$product_i]['workingPriceNetYearly'] = $product['workingPriceNet'] * $this->data['yearlyUsage'];
+                $workingPriceNetYearly = $product['workingPriceNet'] * $data['yearlyUsage'];
 
                 // calculate monthly down payment for the contract
-                $monthlyDownPayment = ($product['basePriceNet'] + $workingPriceNetYearly) / (int)$this->data['downPaymentInterval'];
+                $monthlyDownPayment = ($product['basePriceNet'] + $workingPriceNetYearly) / (int)$data['downPaymentInterval'];
 
-                $this->data['products'][$product_i]['monthlyPayments'] = [];
-                for ($i = 1; $i <= (int)$this->data['downPaymentInterval']; $i++) {
+                $data['products'][$product_i]['monthlyPayments'] = [];
+                for ($i = 1; $i <= (int)$data['downPaymentInterval']; $i++) {
                     $mPayment = $monthlyDownPayment;
-                    foreach ($this->data['bonus'] as $bonus) {
+                    foreach ($bonuses as $bonus) {
                         if ($i > $bonus['paymentAfterMonths']) {
                             // add here the bonus on the staring monthly down payment, not the resulted
                             $mPayment -= ($monthlyDownPayment * ((float)$bonus['value'] / 100));
                         }
                     }
-                    $this->data['products'][$product_i]['monthlyPayments'][$i] = round($mPayment + ($mPayment * ($this->data['vat'] / 100)), 2);
+                    $data['products'][$product_i]['monthlyPayments'][$i] = round($mPayment + ($mPayment * ($data['vat'] / 100)), 2);
                 }
             }
         }
+
+        return $data;
     }
 
-    public function printHTML()
+    public function printHTML(array $products): string
     {
         $html = "<div>";
-        foreach ($this->data['products'] as $product) {
+        foreach ($products as $product) {
             $html .= "<div>";
             $html .= "<p>Product Name: {$product['productName']}</p>";
             $html .= "<p>Tariff Base Price Net: {$product['basePriceNet']} EUR</p>";
@@ -115,10 +122,10 @@ final class DownPaymentCalculator
         return $html;
     }
 
-    public function printJSON()
+    public function printJSON(array $products): string
     {
-        $data = [];
-        foreach ($this->data['products'] as $product) {
+        $dataToJson = [];
+        foreach ($products as $product) {
             $productData = [
                 'productName' => $product['productName'],
                 'basePriceNet' => $product['basePriceNet'],
@@ -129,9 +136,9 @@ final class DownPaymentCalculator
                 $productData['downPayment'][$month] = $monthlyPayment;
             }
 
-            $data[] = $productData;
+            $dataToJson[] = $productData;
         }
 
-        return json_encode($data);
+        return json_encode($dataToJson);
     }
 }
