@@ -22,16 +22,16 @@ class Controller
 
     public function runJSON(Request $request): string
     {
-        $data = $this->downPaymentCalculator->calculate($request);
+        $result = $this->downPaymentCalculator->calculate($request);
 
-        return $this->downPaymentCalculator->printJSON($data['products']);
+        return $this->downPaymentCalculator->printJSON($result);
     }
 
     public function runHTML(Request $request): string
     {
-        $data = $this->downPaymentCalculator->calculate($request);
+        $result = $this->downPaymentCalculator->calculate($request);
 
-        return $this->downPaymentCalculator->printHTML($data['products']);
+        return $this->downPaymentCalculator->printHTML($result);
     }
 }
 

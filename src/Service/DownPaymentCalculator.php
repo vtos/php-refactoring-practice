@@ -11,10 +11,13 @@ declare(strict_types=1);
 namespace DownPaymentCalculator\Service;
 
 use DownPaymentCalculator\Request\Request;
+use DownPaymentCalculator\Result\MonthlyPayment;
+use DownPaymentCalculator\Result\Product;
+use DownPaymentCalculator\Result\Result;
 
 final class DownPaymentCalculator
 {
-    public function calculate(Request $request): array
+    public function calculate(Request $request): Result
     {
         $now = new \DateTime('now');
 
@@ -98,22 +101,22 @@ final class DownPaymentCalculator
             }
         }
 
-        return $data;
+        return $this->buildResult($data['products']);
     }
 
-    public function printHTML(array $products): string
+    public function printHTML(Result $result): string
     {
         $html = "<div>";
-        foreach ($products as $product) {
+        foreach ($result->products as $product) {
             $html .= "<div>";
-            $html .= "<p>Product Name: {$product['productName']}</p>";
-            $html .= "<p>Tariff Base Price Net: {$product['basePriceNet']} EUR</p>";
-            $html .= "<p>Tariff Working Price Net: {$product['workingPriceNet']} Cent</p>";
+            $html .= "<p>Product Name: $product->productName</p>";
+            $html .= "<p>Tariff Base Price Net: $product->basePriceNet EUR</p>";
+            $html .= "<p>Tariff Working Price Net: $product->workingPriceNet Cent</p>";
             $html .= "</div>";
 
             $html .= "<div>";
-            foreach ($product['monthlyPayments'] as $month => $monthlyPayment) {
-                $html .= "<p>Monthly down payment: {$month} - {$monthlyPayment} EUR</p>\n";
+            foreach ($product->monthlyPayments as $monthlyPayment) {
+                $html .= "<p>Monthly down payment: $monthlyPayment->month - $monthlyPayment->amount EUR</p>\n";
             }
             $html .= "</div>";
         }
@@ -122,23 +125,56 @@ final class DownPaymentCalculator
         return $html;
     }
 
-    public function printJSON(array $products): string
+    public function printJSON(Result $result): string
     {
         $dataToJson = [];
-        foreach ($products as $product) {
+        foreach ($result->products as $product) {
             $productData = [
-                'productName' => $product['productName'],
-                'basePriceNet' => $product['basePriceNet'],
-                'workingPriceNet' => $product['workingPriceNet'],
+                'productName' => $product->productName,
+                'basePriceNet' => (int) $product->basePriceNet,
+                'workingPriceNet' => (float) $product->workingPriceNet,
             ];
 
-            foreach ($product['monthlyPayments'] as $month => $monthlyPayment) {
-                $productData['downPayment'][$month] = $monthlyPayment;
+            foreach ($product->monthlyPayments as $monthlyPayment) {
+                $productData['downPayment'][$monthlyPayment->month] = (float) $monthlyPayment->amount;
             }
 
             $dataToJson[] = $productData;
         }
 
         return json_encode($dataToJson);
+    }
+
+    private function buildResult(array $productsData): Result
+    {
+        $result = new Result();
+        $result->products = [];
+
+        foreach ($productsData as $productData) {
+            $product = new Product();
+            $product->productName = $productData['productName'];
+            $product->basePriceNet = (string) $productData['basePriceNet'] ?? '';
+            $product->workingPriceNet = (string) $productData['workingPriceNet'] ?? '';
+
+            $product->monthlyPayments = [];
+
+            if (empty($productData['monthlyPayments'])) {
+                $result->products[] = $product;
+
+                continue;
+            }
+
+            foreach ($productData['monthlyPayments'] as $month => $amount) {
+                $monthlyPayment = new MonthlyPayment();
+                $monthlyPayment->month = (string) $month;
+                $monthlyPayment->amount = (string) $amount;
+
+                $product->monthlyPayments[] = $monthlyPayment;
+            }
+
+            $result->products[] = $product;
+        }
+
+        return $result;
     }
 }
