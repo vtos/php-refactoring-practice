@@ -104,47 +104,6 @@ final class DownPaymentCalculator
         return $this->buildResult($data['products']);
     }
 
-    public function printHTML(Result $result): string
-    {
-        $html = "<div>";
-        foreach ($result->products as $product) {
-            $html .= "<div>";
-            $html .= "<p>Product Name: $product->productName</p>";
-            $html .= "<p>Tariff Base Price Net: $product->basePriceNet EUR</p>";
-            $html .= "<p>Tariff Working Price Net: $product->workingPriceNet Cent</p>";
-            $html .= "</div>";
-
-            $html .= "<div>";
-            foreach ($product->monthlyPayments as $monthlyPayment) {
-                $html .= "<p>Monthly down payment: $monthlyPayment->month - $monthlyPayment->amount EUR</p>\n";
-            }
-            $html .= "</div>";
-        }
-        $html .= "</div>";
-
-        return $html;
-    }
-
-    public function printJSON(Result $result): string
-    {
-        $dataToJson = [];
-        foreach ($result->products as $product) {
-            $productData = [
-                'productName' => $product->productName,
-                'basePriceNet' => (int) $product->basePriceNet,
-                'workingPriceNet' => (float) $product->workingPriceNet,
-            ];
-
-            foreach ($product->monthlyPayments as $monthlyPayment) {
-                $productData['downPayment'][$monthlyPayment->month] = (float) $monthlyPayment->amount;
-            }
-
-            $dataToJson[] = $productData;
-        }
-
-        return json_encode($dataToJson);
-    }
-
     private function buildResult(array $productsData): Result
     {
         $result = new Result();

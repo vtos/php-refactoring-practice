@@ -10,28 +10,26 @@ require_once(__DIR__ . '/vendor/autoload.php');
 
 use DownPaymentCalculator\Request\Request;
 use DownPaymentCalculator\Service\DownPaymentCalculator;
+use DownPaymentCalculator\View\HTMLRenderer;
+use DownPaymentCalculator\View\JSONRenderer;
+use DownPaymentCalculator\View\Renderer;
 
 class Controller
 {
     private DownPaymentCalculator $downPaymentCalculator;
 
-    public function __construct(DownPaymentCalculator $downPaymentCalculator)
+    private Renderer $resultRenderer;
+
+    public function __construct(DownPaymentCalculator $downPaymentCalculator, Renderer $resultRenderer)
     {
         $this->downPaymentCalculator = $downPaymentCalculator;
+        $this->resultRenderer = $resultRenderer;
     }
 
-    public function runJSON(Request $request): string
-    {
+    public function run(Request $request): string {
         $result = $this->downPaymentCalculator->calculate($request);
 
-        return $this->downPaymentCalculator->printJSON($result);
-    }
-
-    public function runHTML(Request $request): string
-    {
-        $result = $this->downPaymentCalculator->calculate($request);
-
-        return $this->downPaymentCalculator->printHTML($result);
+        return $this->resultRenderer->render($result);
     }
 }
 
@@ -157,6 +155,6 @@ $request->bonus = [
     ]
 ];
 
-echo (new Controller(new DownPaymentCalculator()))->runHTML($request);
+echo (new Controller(new DownPaymentCalculator(), new HTMLRenderer()))->run($request);
 echo "\n";
-echo (new Controller(new DownPaymentCalculator()))->runJSON($request);
+echo (new Controller(new DownPaymentCalculator(), new JSONRenderer()))->run($request);
