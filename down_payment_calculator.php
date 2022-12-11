@@ -8,6 +8,12 @@
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
+use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
+use DownPaymentCalculator\Calculation\Configuration\Bonus;
+use DownPaymentCalculator\Calculation\Configuration\Configuration;
+use DownPaymentCalculator\Calculation\Configuration\Product;
+use DownPaymentCalculator\Calculation\Parameters\Parameters;
+use DownPaymentCalculator\Calculation\Parameters\Vat;
 use DownPaymentCalculator\Request\Request;
 use DownPaymentCalculator\Service\DownPaymentCalculator;
 use DownPaymentCalculator\View\HTMLRenderer;
@@ -27,9 +33,36 @@ class Controller
     }
 
     public function run(Request $request): string {
-        $result = $this->downPaymentCalculator->calculate($request);
+        $result = $this->downPaymentCalculator->calculate(
+            $this->extractCalculationParametersFromRequest($request),
+            $this->extractCalculationConfigurationFromRequest($request),
+            new DateTime('now')
+        );
 
         return $this->resultRenderer->render($result);
+    }
+
+    private function extractCalculationParametersFromRequest(Request $request): Parameters
+    {
+        return new Parameters(
+            new NonNegativeInteger($request->yearlyUsage),
+            new Vat($request->vat)
+        );
+    }
+
+    private function extractCalculationConfigurationFromRequest(Request $request): Configuration
+    {
+        return new Configuration(
+            new NonNegativeInteger($request->downPaymentInterval),
+            array_map(
+                fn (array $productAsArray): Product => Product::fromArray($productAsArray),
+                $request->product
+            ),
+            array_map(
+                fn (array $bonusAsArray): Bonus => Bonus::fromArray($bonusAsArray),
+                $request->bonus
+            )
+        );
     }
 }
 
