@@ -1,4 +1,10 @@
 <?php
+/**
+ * The entry point of the legacy application, basically a single script to run.
+ *
+ * @package vtos/php-refactoring-practice
+ */
+
 
 /**
  * This class represents a client's request body
