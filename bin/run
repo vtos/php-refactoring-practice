@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+
+docker-compose run webserver php ./down_payment_calculator.php
+
+printf "\n";
