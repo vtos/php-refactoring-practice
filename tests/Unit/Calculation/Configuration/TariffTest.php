@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace DownPaymentCalculator\Tests\Unit\Calculation\Configuration;
 
+use DateTime;
 use DownPaymentCalculator\Calculation\Common\Name;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
@@ -20,6 +21,42 @@ use PHPUnit\Framework\TestCase;
 
 class TariffTest extends TestCase
 {
+    public function test_it_can_define_its_applicability(): void
+    {
+        $yearlyUsage = new NonNegativeInteger(3500);
+        $date = new DateTime('2021-06-01');
+
+        $tariff = Tariff::fromArray([
+            'name' => 'Tariff 1',
+            'usageFrom' => 0,
+            'validFrom' => '2021-01-01',
+            'validUntil' => '2021-12-31',
+            'workingPriceNet' => 0.20,
+            'basePriceNet' => 50.00,
+        ]);
+        self::assertTrue($tariff->isApplicable($yearlyUsage, $date));
+
+        $tariff = Tariff::fromArray([
+            'name' => 'Tariff 1',
+            'usageFrom' => 0,
+            'validFrom' => '2020-01-01',
+            'validUntil' => '2020-12-31',
+            'workingPriceNet' => 0.20,
+            'basePriceNet' => 50.00,
+        ]);
+        self::assertFalse($tariff->isApplicable($yearlyUsage, $date));
+
+        $tariff = Tariff::fromArray([
+            'name' => 'Tariff 1',
+            'usageFrom' => 5001,
+            'validFrom' => '2021-01-01',
+            'validUntil' => '2021-12-31',
+            'workingPriceNet' => 0.20,
+            'basePriceNet' => 50.00,
+        ]);
+        self::assertFalse($tariff->isApplicable($yearlyUsage, $date));
+    }
+
     /**
      * @dataProvider arrayInputProvider
      */

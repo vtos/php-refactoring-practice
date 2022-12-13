@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace DownPaymentCalculator\Calculation\Configuration;
 
+use DateTime;
 use DownPaymentCalculator\Calculation\Common\Name;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
@@ -49,16 +50,6 @@ final class Tariff
         return $this->name;
     }
 
-    public function usageFrom(): NonNegativeInteger
-    {
-        return $this->usageFrom;
-    }
-
-    public function validityInterval(): ValidityInterval
-    {
-        return $this->validityInterval;
-    }
-
     public function workingPriceNet(): NonNegativeFloat
     {
         return $this->workingPriceNet;
@@ -67,6 +58,16 @@ final class Tariff
     public function basePriceNet(): NonNegativeFloat
     {
         return $this->basePriceNet;
+    }
+
+    /**
+     * Given a yearly usage value, the current date and using the object's validity interval property, the method can decide
+     * whether the tariff is applicable for the calculation. The method is intended to encourage operating the domain's concepts,
+     * which in its turn leads to increased code readability.
+     */
+    public function isApplicable(NonNegativeInteger $yearlyUsage, DateTime $now): bool
+    {
+        return $this->validityInterval->coversDate($now) && $yearlyUsage->greaterThanOrEqual($this->usageFrom);
     }
 
     public static function fromArray(array $data): self

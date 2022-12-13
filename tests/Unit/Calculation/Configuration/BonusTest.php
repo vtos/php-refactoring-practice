@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace DownPaymentCalculator\Tests\Unit\Calculation\Configuration;
 
+use DateTime;
 use DownPaymentCalculator\Calculation\Common\Name;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
@@ -20,6 +21,42 @@ use PHPUnit\Framework\TestCase;
 
 class BonusTest extends TestCase
 {
+    public function test_it_can_define_its_applicability(): void
+    {
+        $yearlyUsage = new NonNegativeInteger(2500);
+        $date = new DateTime('2021-06-01');
+
+        $bonus = Bonus::fromArray([
+            'name' => 'BONUS-C',
+            'usageFrom' => 2500,
+            'validFrom' => '2021-01-01',
+            'validUntil' => '2022-12-31',
+            'value' => 2.5,
+            'paymentAfterMonths' => 3,
+        ]);
+        self::assertTrue($bonus->isApplicable($yearlyUsage, $date));
+
+        $bonus = Bonus::fromArray([
+            'name' => 'BONUS-C',
+            'usageFrom' => 2500,
+            'validFrom' => '2020-01-01',
+            'validUntil' => '2020-12-31',
+            'value' => 2.5,
+            'paymentAfterMonths' => 3,
+        ]);
+        self::assertFalse($bonus->isApplicable($yearlyUsage, $date));
+
+        $bonus = Bonus::fromArray([
+            'name' => 'BONUS-D',
+            'usageFrom' => 4500,
+            'validFrom' => '2021-01-01',
+            'validUntil' => '2022-12-31',
+            'value' => 2.5,
+            'paymentAfterMonths' => 3,
+        ]);
+        self::assertFalse($bonus->isApplicable($yearlyUsage, $date));
+    }
+
     /**
      * @dataProvider arrayInputProvider
      */

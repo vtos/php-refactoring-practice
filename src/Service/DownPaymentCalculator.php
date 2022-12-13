@@ -27,9 +27,7 @@ final class DownPaymentCalculator
             if ($product->validityInterval()->coversDate($now)) {
                 $data['products'][$i]['productName'] = $product->name()->asString();
                 foreach ($product->tariffs() as $tariff) {
-                    if ($tariff->validityInterval()->coversDate($now)
-                        && $parameters->yearlyUsage()->value() >= $tariff->usageFrom()->value()
-                    ) {
+                    if ($tariff->isApplicable($parameters->yearlyUsage(), $now)) {
                         $data['products'][$i]['tariff'] = $tariff;
                         $data['products'][$i]['workingPriceNet'] = $tariff->workingPriceNet()->value();
                         $data['products'][$i]['basePriceNet'] = $tariff->basePriceNet()->value();
@@ -41,9 +39,7 @@ final class DownPaymentCalculator
         // check for valid bonus
         $bonuses = [];
         foreach ($configuration->bonuses() as $bonus) {
-            if ($bonus->validityInterval()->coversDate($now)
-                && $parameters->yearlyUsage()->value() >= $bonus->usageFrom()->value()
-            ) {
+            if ($bonus->isApplicable($parameters->yearlyUsage(), $now)) {
                 $bonuses[] = $bonus;
             }
         }
