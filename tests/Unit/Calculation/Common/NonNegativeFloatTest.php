@@ -16,11 +16,11 @@ use PHPUnit\Framework\TestCase;
 
 class NonNegativeFloatTest extends TestCase
 {
-    public function test_it_can_be_instantiated_with_an_integer_value_and_return_it(): void
+    public function test_it_can_be_instantiated_with_a_float_value_and_return_it(): void
     {
-        $nonNegativeInteger = new NonNegativeFloat(0.25);
+        $nonNegativeFloat = new NonNegativeFloat(0.25);
 
-        self::assertEquals(0.25, $nonNegativeInteger->value());
+        self::assertEquals(0.25, $nonNegativeFloat->asFloat());
     }
 
     public function test_it_cannot_be_instantiated_with_a_negative_value(): void

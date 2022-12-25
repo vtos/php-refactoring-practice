@@ -12,6 +12,7 @@ namespace DownPaymentCalculator\Service;
 
 use DateTime;
 use DownPaymentCalculator\Calculation\Configuration\Configuration;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment;
 use DownPaymentCalculator\Calculation\Parameters\Parameters;
 use DownPaymentCalculator\Result\MonthlyPayment;
 use DownPaymentCalculator\Result\Product;
@@ -29,8 +30,8 @@ final class DownPaymentCalculator
                 foreach ($product->tariffs() as $tariff) {
                     if ($tariff->isApplicable($parameters->yearlyUsage(), $now)) {
                         $data['products'][$i]['tariff'] = $tariff;
-                        $data['products'][$i]['workingPriceNet'] = $tariff->workingPriceNet()->value();
-                        $data['products'][$i]['basePriceNet'] = $tariff->basePriceNet()->value();
+                        $data['products'][$i]['workingPriceNet'] = $tariff->workingPriceNet();
+                        $data['products'][$i]['basePriceNet'] = $tariff->basePriceNet();
                     }
                 }
             }
@@ -46,19 +47,20 @@ final class DownPaymentCalculator
 
         foreach ($data['products'] as $product_i => $product) {
             if (!empty($product['tariff'])) {
-                // yearly working price
-                $workingPriceNetYearly = $product['workingPriceNet'] * $parameters->yearlyUsage()->value();
-
-                // calculate monthly down payment for the contract
-                $monthlyDownPayment = ($product['basePriceNet'] + $workingPriceNetYearly) / $configuration->downPaymentInterval()->value();
+                $monthlyDownPayment = MonthlyDownPayment::calculateBase(
+                    $product['workingPriceNet'],
+                    $product['basePriceNet'],
+                    $parameters->yearlyUsage(),
+                    $configuration->downPaymentInterval()
+                )->value();
 
                 $data['products'][$product_i]['monthlyPayments'] = [];
                 for ($i = 1; $i <= $configuration->downPaymentInterval()->value(); $i++) {
-                    $mPayment = $monthlyDownPayment;
+                    $mPayment = $monthlyDownPayment->asFloat();
                     foreach ($bonuses as $bonus) {
                         if ($i > $bonus->paymentAfterMonths()->value()) {
                             // add here the bonus on the staring monthly down payment, not the resulted
-                            $mPayment -= ($monthlyDownPayment * ($bonus->value()->value() / 100));
+                            $mPayment -= ($monthlyDownPayment->asFloat() * ($bonus->value()->asFloat() / 100));
                         }
                     }
                     $data['products'][$product_i]['monthlyPayments'][$i] = round($mPayment + ($mPayment * ($parameters->vat()->value() / 100)), 2);
@@ -77,8 +79,11 @@ final class DownPaymentCalculator
         foreach ($productsData as $productData) {
             $product = new Product();
             $product->productName = $productData['productName'];
-            $product->basePriceNet = (string) $productData['basePriceNet'] ?? '';
-            $product->workingPriceNet = (string) $productData['workingPriceNet'] ?? '';
+            $product->basePriceNet = isset($productData['basePriceNet']) ? (string) $productData['basePriceNet']->asFloat() : '';
+            $product->workingPriceNet = isset($productData['workingPriceNet'])
+                ? (string) $productData['workingPriceNet']->asFloat()
+                : ''
+            ;
 
             $product->monthlyPayments = [];
 

@@ -25,7 +25,7 @@ final class NonNegativeFloat
         $this->value = $value;
     }
 
-    public function value(): float
+    public function asFloat(): float
     {
         return $this->value;
     }
