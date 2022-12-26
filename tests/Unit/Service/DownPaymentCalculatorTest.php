@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace DownPaymentCalculator\Tests\Unit\Service;
 
 use DateTime;
+use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\Configuration\Bonus;
 use DownPaymentCalculator\Calculation\Configuration\Configuration;
@@ -37,7 +38,9 @@ class DownPaymentCalculatorTest extends TestCase
     {
         return new Parameters(
             new NonNegativeInteger(3500),
-            new Vat(19.00)
+            new Vat(
+                new NonNegativeFloat(19.00)
+            )
         );
     }
 

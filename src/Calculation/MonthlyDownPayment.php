@@ -12,14 +12,29 @@ namespace DownPaymentCalculator\Calculation;
 
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
+use DownPaymentCalculator\Calculation\Parameters\Vat;
 
 final class MonthlyDownPayment
 {
     private NonNegativeFloat $value;
 
-    private function __construct(NonNegativeFloat $value)
+    public function __construct(NonNegativeFloat $value)
     {
         $this->value = $value;
+    }
+
+    public function withVatIncluded(Vat $vat): self
+    {
+        return new self(
+            new NonNegativeFloat(
+                round($this->value->asFloat() + $this->value->asFloat() * $vat->asFraction()->asFloat(), 2)
+            )
+        );
+    }
+
+    public function value(): NonNegativeFloat
+    {
+        return $this->value;
     }
 
     public static function calculateBase(
@@ -29,16 +44,18 @@ final class MonthlyDownPayment
         NonNegativeInteger $downPaymentInterval
     ): self {
         $monthlyDownPaymentAsFloat = (
-            $basePriceNet->asFloat() + $workingPriceNet->asFloat() * $yearlyUsage->value()
-        ) / $downPaymentInterval->value();
+                $basePriceNet->asFloat() + $workingPriceNet->asFloat() * $yearlyUsage->value()
+            ) / $downPaymentInterval->value();
 
         return new self(
             new NonNegativeFloat($monthlyDownPaymentAsFloat)
         );
     }
 
-    public function value(): NonNegativeFloat
+    public static function fromFloat(float $value): self
     {
-        return $this->value;
+        return new self(
+            new NonNegativeFloat($value)
+        );
     }
 }

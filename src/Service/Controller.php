@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace DownPaymentCalculator\Service;
 
 use DateTime;
+use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\Configuration\Bonus;
 use DownPaymentCalculator\Calculation\Configuration\Configuration;
@@ -46,7 +47,9 @@ final class Controller
     {
         return new Parameters(
             new NonNegativeInteger((int) $request->yearlyUsage),
-            new Vat((float) $request->vat)
+            new Vat(
+                new NonNegativeFloat((float) $request->vat)
+            )
         );
     }
 

@@ -63,7 +63,11 @@ final class DownPaymentCalculator
                             $mPayment -= ($monthlyDownPayment->asFloat() * ($bonus->value()->asFloat() / 100));
                         }
                     }
-                    $data['products'][$product_i]['monthlyPayments'][$i] = round($mPayment + ($mPayment * ($parameters->vat()->value() / 100)), 2);
+                    $data['products'][$product_i]['monthlyPayments'][$i] = MonthlyDownPayment::fromFloat($mPayment)
+                        ->withVatIncluded($parameters->vat())
+                        ->value()
+                        ->asFloat()
+                    ;
                 }
             }
         }

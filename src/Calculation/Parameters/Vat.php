@@ -10,31 +10,36 @@ declare(strict_types=1);
 
 namespace DownPaymentCalculator\Calculation\Parameters;
 
+use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use InvalidArgumentException;
 
 final class Vat
 {
-    private float $value;
+    private NonNegativeFloat $value;
 
-    public function __construct(float $value)
+    public function __construct(NonNegativeFloat $value)
     {
-        if ($value < 0) {
-            throw new InvalidArgumentException('Vat value cannot be negative.');
-        }
-        if ($value > 100) {
+        if ($value->asFloat() > 100) {
             throw new InvalidArgumentException('Vat value cannot exceed 100.');
         }
 
         $this->value = $value;
     }
 
-    public function value(): float
+    public function value(): NonNegativeFloat
     {
         return $this->value;
     }
 
+    public function asFraction(): NonNegativeFloat
+    {
+        return new NonNegativeFloat($this->value->asFloat() / 100);
+    }
+
     public static function fromFloat(float $value): self
     {
-        return new self($value);
+        return new self(
+            new NonNegativeFloat($value)
+        );
     }
 }

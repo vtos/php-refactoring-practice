@@ -13,6 +13,7 @@ namespace DownPaymentCalculator\Tests\Unit\Calculation;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\MonthlyDownPayment;
+use DownPaymentCalculator\Calculation\Parameters\Vat;
 use PHPUnit\Framework\TestCase;
 
 class MonthlyDownPaymentTest extends TestCase
@@ -26,6 +27,21 @@ class MonthlyDownPaymentTest extends TestCase
             new NonNegativeInteger(12)
         );
 
-        self::assertEquals(new NonNegativeFloat(62.5), $monthlyDownPayment->value());
+        self::assertEquals(MonthlyDownPayment::fromFloat(62.5), $monthlyDownPayment);
+    }
+
+    public function test_it_can_be_added_with_vat_applied(): void
+    {
+        $monthlyDownPayment = MonthlyDownPayment::calculateBase(
+            new NonNegativeFloat(0.20),
+            new NonNegativeFloat(50.00),
+            new NonNegativeInteger(3500),
+            new NonNegativeInteger(12)
+        );
+
+        self::assertEquals(
+            MonthlyDownPayment::fromFloat(74.38),
+            $monthlyDownPayment->withVatIncluded(Vat::fromFloat(19.00))
+        );
     }
 }
