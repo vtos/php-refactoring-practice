@@ -8,11 +8,11 @@
 
 declare(strict_types=1);
 
-namespace DownPaymentCalculator\Tests\Unit\Calculation;
+namespace DownPaymentCalculator\Tests\Unit\Calculation\MonthlyDownPayment;
 
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
-use DownPaymentCalculator\Calculation\MonthlyDownPayment;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment\MonthlyDownPayment;
 use DownPaymentCalculator\Calculation\Parameters\Vat;
 use PHPUnit\Framework\TestCase;
 

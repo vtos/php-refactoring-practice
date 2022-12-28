@@ -16,6 +16,7 @@ use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\Common\ValidityInterval;
 use DownPaymentCalculator\Calculation\DataExtraction;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment\MonthSequenceNumber;
 
 final class Bonus
 {
@@ -61,13 +62,15 @@ final class Bonus
     }
 
     /**
-     * Given a yearly usage value, the current date and using the object's validity interval property, the method can decide
-     * whether the bonus is applicable for the calculation. The method is intended to encourage operating the domain's concepts,
-     * which in its turn leads to increased code readability.
+     * Based on the parameters, the method can decide whether the bonus is applicable for the calculation. The method is intended
+     * to encourage operating the domain's concepts, which in its turn leads to increased code readability.
      */
-    public function isApplicable(NonNegativeInteger $yearlyUsage, DateTime $now): bool
+    public function isApplicable(NonNegativeInteger $yearlyUsage, DateTime $now, MonthSequenceNumber $month): bool
     {
-        return $this->validityInterval->coversDate($now) && $yearlyUsage->greaterThanOrEqual($this->usageFrom);
+        return $this->validityInterval->coversDate($now)
+            && $yearlyUsage->isGreaterThanOrEqual($this->usageFrom)
+            && $month->value()->isGreaterThan($this->paymentAfterMonths())
+        ;
     }
 
     public static function fromArray(array $data): self

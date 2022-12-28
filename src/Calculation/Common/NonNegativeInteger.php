@@ -25,12 +25,22 @@ final class NonNegativeInteger
         $this->value = $value;
     }
 
-    public function greaterThanOrEqual(NonNegativeInteger $valueToCompareWith): bool
+    public function isGreaterThanOrEqual(NonNegativeInteger $valueToCompareWith): bool
     {
-        return $this->value >= $valueToCompareWith->value();
+        return $this->value >= $valueToCompareWith->asInteger();
     }
 
-    public function value(): int
+    public function isGreaterThan(NonNegativeInteger $valueToCompareWith): bool
+    {
+        return $this->value > $valueToCompareWith->asInteger();
+    }
+
+    public function isPositive(): bool
+    {
+        return $this->value > 0;
+    }
+
+    public function asInteger(): int
     {
         return $this->value;
     }

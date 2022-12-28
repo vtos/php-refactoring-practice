@@ -8,10 +8,12 @@
 
 declare(strict_types=1);
 
-namespace DownPaymentCalculator\Calculation;
+namespace DownPaymentCalculator\Calculation\MonthlyDownPayment;
 
+use DateTime;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
+use DownPaymentCalculator\Calculation\Configuration\Bonus;
 use DownPaymentCalculator\Calculation\Parameters\Vat;
 
 final class MonthlyDownPayment
@@ -21,6 +23,21 @@ final class MonthlyDownPayment
     public function __construct(NonNegativeFloat $value)
     {
         $this->value = $value;
+    }
+
+    /**
+     * @param Bonus[] $bonuses
+     */
+    public function applyBonuses(array $bonuses, NonNegativeInteger $yearlyUsage, DateTime $now, MonthSequenceNumber $month): self
+    {
+        $monthlyDownPaymentWithBonusesApplied = new self($this->value);
+
+        foreach ($bonuses as $bonus) {
+            $monthlyDownPaymentWithBonusesApplied = $monthlyDownPaymentWithBonusesApplied
+                ->applyBonusIfApplicable($this, $bonus, $yearlyUsage, $now, $month);
+        }
+
+        return $monthlyDownPaymentWithBonusesApplied;
     }
 
     public function withVatIncluded(Vat $vat): self
@@ -44,8 +61,8 @@ final class MonthlyDownPayment
         NonNegativeInteger $downPaymentInterval
     ): self {
         $monthlyDownPaymentAsFloat = (
-                $basePriceNet->asFloat() + $workingPriceNet->asFloat() * $yearlyUsage->value()
-            ) / $downPaymentInterval->value();
+                $basePriceNet->asFloat() + $workingPriceNet->asFloat() * $yearlyUsage->asInteger()
+            ) / $downPaymentInterval->asInteger();
 
         return new self(
             new NonNegativeFloat($monthlyDownPaymentAsFloat)
@@ -56,6 +73,25 @@ final class MonthlyDownPayment
     {
         return new self(
             new NonNegativeFloat($value)
+        );
+    }
+
+    private function applyBonusIfApplicable(
+        self $beforeBonusesApplied,
+        Bonus $bonus,
+        NonNegativeInteger $yearlyUsage,
+        DateTime $now,
+        MonthSequenceNumber $month
+    ): self {
+        if (!$bonus->isApplicable($yearlyUsage, $now, $month)) {
+            return $this;
+        }
+
+        $monthlyDownPaymentAsFloat = $this->value->asFloat()
+            - $beforeBonusesApplied->value()->asFloat() * $bonus->value()->asFloat() / 100;
+
+        return new self(
+            new NonNegativeFloat($monthlyDownPaymentAsFloat)
         );
     }
 }

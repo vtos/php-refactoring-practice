@@ -36,7 +36,7 @@ final class Configuration
      */
     public function __construct(NonNegativeInteger $downPaymentInterval, array $products, array $bonuses)
     {
-        if ($downPaymentInterval->value() < 1) {
+        if ($downPaymentInterval->asInteger() < 1) {
             throw new InvalidArgumentException('Down payment interval cannot be less than 1.');
         }
         if ($products === []) {

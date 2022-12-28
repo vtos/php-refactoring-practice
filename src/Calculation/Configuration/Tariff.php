@@ -67,7 +67,7 @@ final class Tariff
      */
     public function isApplicable(NonNegativeInteger $yearlyUsage, DateTime $now): bool
     {
-        return $this->validityInterval->coversDate($now) && $yearlyUsage->greaterThanOrEqual($this->usageFrom);
+        return $this->validityInterval->coversDate($now) && $yearlyUsage->isGreaterThanOrEqual($this->usageFrom);
     }
 
     public static function fromArray(array $data): self

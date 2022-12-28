@@ -12,7 +12,8 @@ namespace DownPaymentCalculator\Service;
 
 use DateTime;
 use DownPaymentCalculator\Calculation\Configuration\Configuration;
-use DownPaymentCalculator\Calculation\MonthlyDownPayment;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment\MonthlyDownPayment;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment\MonthSequenceNumber;
 use DownPaymentCalculator\Calculation\Parameters\Parameters;
 use DownPaymentCalculator\Result\MonthlyPayment;
 use DownPaymentCalculator\Result\Product;
@@ -37,14 +38,6 @@ final class DownPaymentCalculator
             }
         }
 
-        // check for valid bonus
-        $bonuses = [];
-        foreach ($configuration->bonuses() as $bonus) {
-            if ($bonus->isApplicable($parameters->yearlyUsage(), $now)) {
-                $bonuses[] = $bonus;
-            }
-        }
-
         foreach ($data['products'] as $product_i => $product) {
             if (!empty($product['tariff'])) {
                 $monthlyDownPayment = MonthlyDownPayment::calculateBase(
@@ -52,18 +45,17 @@ final class DownPaymentCalculator
                     $product['basePriceNet'],
                     $parameters->yearlyUsage(),
                     $configuration->downPaymentInterval()
-                )->value();
+                );
 
                 $data['products'][$product_i]['monthlyPayments'] = [];
-                for ($i = 1; $i <= $configuration->downPaymentInterval()->value(); $i++) {
-                    $mPayment = $monthlyDownPayment->asFloat();
-                    foreach ($bonuses as $bonus) {
-                        if ($i > $bonus->paymentAfterMonths()->value()) {
-                            // add here the bonus on the staring monthly down payment, not the resulted
-                            $mPayment -= ($monthlyDownPayment->asFloat() * ($bonus->value()->asFloat() / 100));
-                        }
-                    }
-                    $data['products'][$product_i]['monthlyPayments'][$i] = MonthlyDownPayment::fromFloat($mPayment)
+                for ($monthNumber = 1; $monthNumber <= $configuration->downPaymentInterval()->asInteger(); $monthNumber++) {
+                    $data['products'][$product_i]['monthlyPayments'][$monthNumber] = $monthlyDownPayment
+                        ->applyBonuses(
+                            $configuration->bonuses(),
+                            $parameters->yearlyUsage(),
+                            $now,
+                            MonthSequenceNumber::fromInteger($monthNumber)
+                        )
                         ->withVatIncluded($parameters->vat())
                         ->value()
                         ->asFloat()

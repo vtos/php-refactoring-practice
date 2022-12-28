@@ -20,7 +20,7 @@ class NonNegativeIntegerTest extends TestCase
     {
         $nonNegativeInteger = new NonNegativeInteger(5);
 
-        self::assertEquals(5, $nonNegativeInteger->value());
+        self::assertEquals(5, $nonNegativeInteger->asInteger());
     }
 
     public function test_it_cannot_be_instantiated_with_a_negative_value(): void
@@ -33,8 +33,25 @@ class NonNegativeIntegerTest extends TestCase
     {
         $nonNegativeInteger = new NonNegativeInteger(100);
 
-        self::assertTrue($nonNegativeInteger->greaterThanOrEqual(new NonNegativeInteger(100)));
-        self::assertTrue($nonNegativeInteger->greaterThanOrEqual(new NonNegativeInteger(99)));
-        self::assertFalse($nonNegativeInteger->greaterThanOrEqual(new NonNegativeInteger(101)));
+        self::assertTrue($nonNegativeInteger->isGreaterThanOrEqual(new NonNegativeInteger(100)));
+        self::assertTrue($nonNegativeInteger->isGreaterThanOrEqual(new NonNegativeInteger(99)));
+        self::assertFalse($nonNegativeInteger->isGreaterThanOrEqual(new NonNegativeInteger(101)));
+    }
+
+    public function test_it_can_report_if_it_has_a_positive_value(): void
+    {
+        $positive = new NonNegativeInteger(1);
+        self::assertTrue($positive->isPositive());
+
+        $zero = new NonNegativeInteger(0);
+        self::assertFalse($zero->isPositive());
+    }
+
+    public function test_it_can_be_compared_with_other_values_to_define_if_it_is_greater_than_those(): void
+    {
+        $nonNegativeInteger = new NonNegativeInteger(100);
+        self::assertFalse($nonNegativeInteger->isGreaterThan(new NonNegativeInteger(100)));
+        self::assertFalse($nonNegativeInteger->isGreaterThan(new NonNegativeInteger(101)));
+        self::assertTrue($nonNegativeInteger->isGreaterThan(new NonNegativeInteger(99)));
     }
 }

@@ -16,6 +16,7 @@ use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\Common\ValidityInterval;
 use DownPaymentCalculator\Calculation\Configuration\Bonus;
+use DownPaymentCalculator\Calculation\MonthlyDownPayment\MonthSequenceNumber;
 use Generator;
 use PHPUnit\Framework\TestCase;
 
@@ -25,6 +26,9 @@ class BonusTest extends TestCase
     {
         $yearlyUsage = new NonNegativeInteger(2500);
         $date = new DateTime('2021-06-01');
+        $monthNumber = new MonthSequenceNumber(
+            new NonNegativeInteger(4)
+        );
 
         $bonus = Bonus::fromArray([
             'name' => 'BONUS-C',
@@ -34,7 +38,7 @@ class BonusTest extends TestCase
             'value' => 2.5,
             'paymentAfterMonths' => 3,
         ]);
-        self::assertTrue($bonus->isApplicable($yearlyUsage, $date));
+        self::assertTrue($bonus->isApplicable($yearlyUsage, $date, $monthNumber));
 
         $bonus = Bonus::fromArray([
             'name' => 'BONUS-C',
@@ -44,7 +48,7 @@ class BonusTest extends TestCase
             'value' => 2.5,
             'paymentAfterMonths' => 3,
         ]);
-        self::assertFalse($bonus->isApplicable($yearlyUsage, $date));
+        self::assertFalse($bonus->isApplicable($yearlyUsage, $date, $monthNumber));
 
         $bonus = Bonus::fromArray([
             'name' => 'BONUS-D',
@@ -54,7 +58,12 @@ class BonusTest extends TestCase
             'value' => 2.5,
             'paymentAfterMonths' => 3,
         ]);
-        self::assertFalse($bonus->isApplicable($yearlyUsage, $date));
+        self::assertFalse($bonus->isApplicable($yearlyUsage, $date, $monthNumber));
+
+        $monthNumber = new MonthSequenceNumber(
+            new NonNegativeInteger(2)
+        );
+        self::assertFalse($bonus->isApplicable($yearlyUsage, $date, $monthNumber));
     }
 
     /**
