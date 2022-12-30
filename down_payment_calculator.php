@@ -45,7 +45,7 @@ class DownPaymentCalculator
 
     public function calculate(Request $request)
     {
-        $now = new \DateTime('now');
+        $now = new \DateTime('2022-12-11');
 
         if (empty($request->postalCode)) {
             echo 'Zip code is missing';
