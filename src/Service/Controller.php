@@ -37,7 +37,7 @@ final class Controller
         $result = $this->downPaymentCalculator->calculate(
             $this->extractCalculationParametersFromRequest($request),
             $this->extractCalculationConfigurationFromRequest($request),
-            new DateTime('now')
+            new DateTime('2022-12-11')
         );
 
         return $this->resultRenderer->render($result);
