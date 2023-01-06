@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace DownPaymentCalculator\Tests\Unit\Service;
 
 use DateTime;
+use DownPaymentCalculator\Calculation\Common\Name;
 use DownPaymentCalculator\Calculation\Common\NonNegativeFloat;
 use DownPaymentCalculator\Calculation\Common\NonNegativeInteger;
 use DownPaymentCalculator\Calculation\Configuration\Bonus;
@@ -21,6 +22,7 @@ use DownPaymentCalculator\Calculation\Parameters\Vat;
 use DownPaymentCalculator\Result\MonthlyPayment;
 use DownPaymentCalculator\Result\Product as ResultProduct;
 use DownPaymentCalculator\Result\Result;
+use DownPaymentCalculator\Result\TariffApplied;
 use DownPaymentCalculator\Service\DownPaymentCalculator;
 use PHPUnit\Framework\TestCase;
 
@@ -177,9 +179,14 @@ class DownPaymentCalculatorTest extends TestCase
         $result->products = [];
 
         $product = new ResultProduct();
-        $product->productName = 'Electricity Simple';
-        $product->basePriceNet = '40';
-        $product->workingPriceNet = '0.15';
+        $product->name = Name::fromString('Electricity Simple');
+
+        $tariffApplied = new TariffApplied();
+        $tariffApplied->basePriceNet = new NonNegativeFloat(40);
+        $tariffApplied->workingPriceNet = new NonNegativeFloat(0.15);
+
+        $product->tariffApplied = $tariffApplied;
+
         $product->monthlyPayments = [];
 
         $monthlyPaymentsAsArray = [
@@ -208,9 +215,14 @@ class DownPaymentCalculatorTest extends TestCase
         $result->products[] = $product;
 
         $product = new ResultProduct();
-        $product->productName = 'Electricity Advanced';
-        $product->basePriceNet = '41';
-        $product->workingPriceNet = '0.18';
+        $product->name = Name::fromString('Electricity Advanced');
+
+        $tariffApplied = new TariffApplied();
+        $tariffApplied->basePriceNet = new NonNegativeFloat(41);
+        $tariffApplied->workingPriceNet = new NonNegativeFloat(0.18);
+
+        $product->tariffApplied = $tariffApplied;
+
         $product->monthlyPayments = [];
 
         $monthlyPaymentsAsArray = [

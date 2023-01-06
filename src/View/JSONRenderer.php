@@ -19,9 +19,15 @@ final class JSONRenderer implements Renderer
         $dataToJson = [];
         foreach ($downPaymentCalculationResult->products as $product) {
             $productData = [
-                'productName' => $product->productName,
-                'basePriceNet' => (int) $product->basePriceNet,
-                'workingPriceNet' => (float) $product->workingPriceNet,
+                'productName' => $product->name->asString(),
+                'basePriceNet' => $product->tariffApplied->basePriceNet !== null
+                    ? $product->tariffApplied->basePriceNet->asFloat()
+                    : '-'
+                ,
+                'workingPriceNet' => $product->tariffApplied->workingPriceNet !== null
+                    ? $product->tariffApplied->workingPriceNet->asFloat()
+                    : '-'
+                ,
             ];
 
             foreach ($product->monthlyPayments as $monthlyPayment) {

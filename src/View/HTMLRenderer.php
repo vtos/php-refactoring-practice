@@ -18,10 +18,16 @@ final class HTMLRenderer implements Renderer
     {
         $html = "<div>";
         foreach ($downPaymentCalculationResult->products as $product) {
+            $basePriceNet = $product->tariffApplied->basePriceNet !== null ? $product->tariffApplied->basePriceNet->asFloat() : '-';
+            $workingPriceNet = $product->tariffApplied->workingPriceNet !== null
+                ? $product->tariffApplied->workingPriceNet->asFloat()
+                : '-'
+            ;
+
             $html .= "<div>";
-            $html .= "<p>Product Name: $product->productName</p>";
-            $html .= "<p>Tariff Base Price Net: $product->basePriceNet EUR</p>";
-            $html .= "<p>Tariff Working Price Net: $product->workingPriceNet Cent</p>";
+            $html .= "<p>Product Name: " . $product->name->asString() . "</p>";
+            $html .= "<p>Tariff Base Price Net: $basePriceNet EUR</p>";
+            $html .= "<p>Tariff Working Price Net: $workingPriceNet Cent</p>";
             $html .= "</div>";
 
             $html .= "<div>";

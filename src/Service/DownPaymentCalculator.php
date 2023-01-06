@@ -18,6 +18,7 @@ use DownPaymentCalculator\Calculation\Parameters\Parameters;
 use DownPaymentCalculator\Result\MonthlyPayment;
 use DownPaymentCalculator\Result\Product;
 use DownPaymentCalculator\Result\Result;
+use DownPaymentCalculator\Result\TariffApplied;
 
 final class DownPaymentCalculator
 {
@@ -27,7 +28,7 @@ final class DownPaymentCalculator
 
         foreach ($configuration->products() as $i => $product) {
             if ($product->validityInterval()->coversDate($now)) {
-                $data['products'][$i]['productName'] = $product->name()->asString();
+                $data['products'][$i]['productName'] = $product->name();
                 foreach ($product->tariffs() as $tariff) {
                     if ($tariff->isApplicable($parameters->yearlyUsage(), $now)) {
                         $data['products'][$i]['tariff'] = $tariff;
@@ -74,12 +75,13 @@ final class DownPaymentCalculator
 
         foreach ($productsData as $productData) {
             $product = new Product();
-            $product->productName = $productData['productName'];
-            $product->basePriceNet = isset($productData['basePriceNet']) ? (string) $productData['basePriceNet']->asFloat() : '';
-            $product->workingPriceNet = isset($productData['workingPriceNet'])
-                ? (string) $productData['workingPriceNet']->asFloat()
-                : ''
-            ;
+            $product->name = $productData['productName'];
+
+            $tariffApplied = new TariffApplied();
+            $tariffApplied->basePriceNet = $productData['basePriceNet'] ?? null;
+            $tariffApplied->workingPriceNet = $productData['workingPriceNet'] ?? null;
+
+            $product->tariffApplied = $tariffApplied;
 
             $product->monthlyPayments = [];
 

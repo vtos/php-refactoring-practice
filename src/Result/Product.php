@@ -10,13 +10,13 @@ declare(strict_types=1);
 
 namespace DownPaymentCalculator\Result;
 
+use DownPaymentCalculator\Calculation\Common\Name;
+
 final class Product
 {
-    public string $productName;
+    public Name $name;
 
-    public string $basePriceNet;
-
-    public string $workingPriceNet;
+    public TariffApplied $tariffApplied;
 
     /**
      * @var MonthlyPayment[] $monthlyPayments
